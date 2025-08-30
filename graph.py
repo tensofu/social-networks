@@ -1,4 +1,5 @@
 import argparse
+from utils import helper
 
 
 def main():
@@ -29,14 +30,16 @@ def main():
     args.input = None
 
 
+# Runs the program
 if __name__ == "__main__":
   main()
   
 
 '''
-CLI Tests (generating a graph, reading a graph, and both):
+CLI Tests (generating a graph, reading a graph, input & output present, filename is not .gml):
   python ./graph.py --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.gml
   python ./graph.py --input data.gml --analyze --plot
   python ./graph.py --input graph_file.gml --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.gml
+  python ./graph.py --input graph_file.gml --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.txt
 '''
 
