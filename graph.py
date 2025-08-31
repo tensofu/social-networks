@@ -30,9 +30,14 @@ def main():
   parser.add_argument("--plot", action="store_true")
   parser.add_argument("--output", type=str)
 
-  # Prints out all of the arguments passed (or not) for debugging purposes.
+  # Parses and gathers the arguments
   args = parser.parse_args()
-  args.create_random_graph[0] = int(args.create_random_graph[0]) # Converts the `n` to an integer.
+  
+  # Converts the `n` to an integer.
+  if (args.create_random_graph):
+    args.create_random_graph[0] = int(args.create_random_graph[0]) 
+
+  # Prints out all of the arguments passed (or not) for debugging purposes.
   print(args.input, args.create_random_graph, args.multi_BFS, args.analyze, args.plot, args.output)
   
   # OVERRIDES ARGUMENT --input IF --create_random_graph ARGUMENTS ARE PRESENT (sets --input arguments to None)
@@ -43,7 +48,7 @@ def main():
     
   # GRAPH CONSTRUCTION SECTION
   graph = None
-  
+
   # Generates an Erdos-Renyi Graph using a high level implementation (only create if the arguments for --create_random_graph are present)
   if (args.create_random_graph):
     # Sets a random seed for reproducibility
@@ -66,7 +71,10 @@ def main():
     nx.write_gml(graph, f"data/{args.output}")
     print(f"Graph saved to data/{args.output}")
     print()
-
+  elif (args.input):
+    graph = nx.read_gml(f"data/{args.input}")
+  else:
+    print("No --input or --create_random_graph arguments detected. No graph has been loaded.")
 
   # GRAPH ANALYSIS SECTION
   if (graph and args.analyze):

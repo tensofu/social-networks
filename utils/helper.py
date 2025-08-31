@@ -14,6 +14,10 @@ def is_gml(filename: str) -> bool:
 
 # Performs a multi-search BFS and returns two lists: the results and paths tracked.
 def multi_search_bfs(graph: nx.Graph, sources: list):
+  # Checks if sources exists. If not, initialize it as a list ["0"].
+  if not sources:
+    sources = ["0"]
+  
   # Multi-Search BFS
   bfs_results = []
   queue = Queue()
