@@ -8,3 +8,7 @@ The usage will consists of running flags and arguments in for executing certain 
 ```python
 # TODO: everything
 ```
+
+### Directories
+- The `data/` directory will start the `.gml` files related to graph modelling.
+- The `utils/` directory will contain all of the additional `.py` modules used for the program.
