@@ -25,7 +25,6 @@ def multi_search_bfs(graph: nx.Graph, sources: list):
   for item in sources:
     queue.put(item)
     bfs_results.append(item)
-  
   while (not queue.empty()):
     current_node = queue.get()
     # Gets the list of neighbors for a specified node
@@ -70,3 +69,92 @@ def identify_isolate_nodes(graph: nx.Graph):
       isolated_nodes.append(node)
   
   return isolated_nodes
+
+def cycle_detection(graph: nx.Graph):
+  visited = set()
+  def dfs(node, prev):
+    visited.add(node)
+    for neighbor in graph.neighbors(node):
+      if neighbor not in visited:
+        if dfs(neighbor,node):
+          return True
+      else:
+        if neighbor != prev:
+          return True
+    return False
+  node_list = list(graph.nodes)
+  if node_list:
+    return dfs(node_list[0],None)
+  else:
+    return False
+  
+
+def graph_density(graph: nx.Graph):
+  num_edges =  graph.number_of_edges()
+
+  #compute total possible number of edges in the graph
+  num_nodes = graph.number_of_nodes()
+  max_possible_edges = (num_nodes*(num_nodes-1))/2
+
+  density = num_edges/max_possible_edges
+  return density
+
+def avg_shortest_path_lenf(graph:nx.Graph):
+  #first check if graph is connected by using connected components function
+  if len(identify_connected_components(graph)) == 1:
+
+      #create dict to store nodes and shortest path lenf between nodes
+      node_dict = {}
+
+      #perform bfs from each node and store resulting shortest paths
+      for bfs_start_node in list(graph.nodes):
+        node_dict[bfs_start_node] = {}
+
+        #preform bfs on graph and store shortest path between nodes in dict:
+        bfs_results = [bfs_start_node]
+        queue = Queue()
+        queue.put((bfs_start_node,0))
+        
+        visited_nodes = set()
+        visited_nodes.add(bfs_start_node)
+        
+
+        while (not queue.empty()):
+          current_node, level = queue.get()
+          
+
+          # Gets the list of neighbors for a specified node
+          neighbors_iterator = graph.neighbors(current_node)
+          for nbr_node in neighbors_iterator:
+            if (nbr_node not in visited_nodes):
+              queue.put((nbr_node, level +1))
+
+              #if neighbor has not been added to dict of node we started bfs from then add it and the path lenf
+              if nbr_node not in node_dict[bfs_start_node]:
+                node_dict[bfs_start_node][nbr_node] = (level+1)
+
+              #essentially do same as above but for the neighboring node
+              if (nbr_node in node_dict) and (bfs_start_node not in node_dict[nbr_node]):
+                node_dict[nbr_node][bfs_start_node] = (level+1)
+
+              
+
+          visited_nodes.add(current_node)
+
+
+
+      #taking average of shortest paths between each pairs of ndoes
+      num_paths = 0
+      sum_shortestpaths = 0
+
+      for node in node_dict:
+        num_paths +=len(node_dict[node])
+        for neighbor in node_dict[node]:
+          sum_shortestpaths+=node_dict[node][neighbor]
+      return (sum_shortestpaths/num_paths)
+
+ 
+
+  else:
+    #graph is not connected
+    return False

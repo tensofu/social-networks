@@ -88,10 +88,27 @@ def main():
     connected_components = helper.identify_connected_components(graph)
     print(f"List of connected components: {connected_components}")
     
+    #Identify if cycles exist in graph
+    cycle_bool = helper.cycle_detection(graph)
+    print("Cycle exists in the graph") if cycle_bool else print("No cycle exists in the graph")
+
     # Identifying isolated nodes
     isolated_nodes = helper.identify_isolate_nodes(graph)
     print(f"List of isolated nodes: {isolated_nodes}")
-        
+
+    
+    #Compute density of graph
+    density_graph = helper.graph_density(graph)
+    print(f"The Graph's measured density is: {density_graph}")
+
+  
+    #Compute Average Shortest Path Length
+    avg_spl = helper.avg_shortest_path_lenf(graph)
+    if avg_spl:
+      print(f"Average Shortest Path Length: {avg_spl}")    
+    else:
+      print("The graph is not connected, therefore we cannot compute the average shortest path length")
+  
   # Stops timer
   end_time = time.perf_counter()
   elapsed_time = end_time - start_time
