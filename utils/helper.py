@@ -12,11 +12,34 @@ def is_gml(filename: str) -> bool:
     return False
   return True
 
-# Performs a multi-search BFS and returns two lists: the results and paths tracked.
+# Performs a multi-search BFS and returns four lists: the results, paths tracked, shortest path edge color array, and 
+#   source node color array.
 def multi_search_bfs(graph: nx.Graph, sources: list):
   # Checks if sources exists. If not, initialize it as a list ["0"].
   if not sources:
     sources = ["0"]
+  
+  # To cycle through colors and map to a source
+  available_colors = ['red', 'blue', 'green', 'purple', 'orange', 'cyan']
+  source_to_color = {
+    source: available_colors[i % len(available_colors)] 
+    for i, source in enumerate(sources)
+  }
+  
+  # Normalizes the source colors into an array
+  source_node_color_array = []
+  for node in graph.nodes():
+    if node in source_to_color:
+      source_node_color_array.append(source_to_color[node])
+    else:
+      source_node_color_array.append('skyblue')
+  
+  # Maps 
+  edge_colors = {}
+  bfs_map = {}
+  
+  for source in sources:
+    bfs_map[source] = []
   
   # Multi-Search BFS
   bfs_results = []
@@ -35,8 +58,20 @@ def multi_search_bfs(graph: nx.Graph, sources: list):
         edge = (current_node, item)
         if (edge not in visited):
           visited.append(edge)
+          edge_colors[tuple(sorted(edge))] = source_to_color[current_node]
+          source_to_color[item] = source_to_color[current_node]
         bfs_results.append(item)
-  return bfs_results, visited
+        
+  # Normalizes the edge colors into an array
+  edge_colors_array = []
+  for u, v in graph.edges():
+    edge = tuple(sorted((u, v)))
+    if edge in edge_colors:
+      edge_colors_array.append(edge_colors[edge])
+    else:
+      edge_colors_array.append('gray')
+      
+  return bfs_results, visited, edge_colors_array, source_node_color_array
 
 # Identifies connected components using a recursive DFS Search
 #   Iterates through each node in the graph, performs DFS search until all connected nodes are visited, then
@@ -117,11 +152,9 @@ def avg_shortest_path_lenf(graph:nx.Graph):
         
         visited_nodes = set()
         visited_nodes.add(bfs_start_node)
-        
 
         while (not queue.empty()):
           current_node, level = queue.get()
-          
 
           # Gets the list of neighbors for a specified node
           neighbors_iterator = graph.neighbors(current_node)
@@ -137,11 +170,7 @@ def avg_shortest_path_lenf(graph:nx.Graph):
               if (nbr_node in node_dict) and (bfs_start_node not in node_dict[nbr_node]):
                 node_dict[nbr_node][bfs_start_node] = (level+1)
 
-              
-
           visited_nodes.add(current_node)
-
-
 
       #taking average of shortest paths between each pairs of ndoes
       num_paths = 0
@@ -153,8 +182,7 @@ def avg_shortest_path_lenf(graph:nx.Graph):
           sum_shortestpaths+=node_dict[node][neighbor]
       return (sum_shortestpaths/num_paths)
 
- 
-
   else:
     #graph is not connected
     return False
+  

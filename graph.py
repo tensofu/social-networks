@@ -29,6 +29,7 @@ def main():
   parser.add_argument("--analyze", action="store_true")
   parser.add_argument("--plot", action="store_true")
   parser.add_argument("--output", type=str)
+  parser.add_argument("--seed", type=str)
 
   # Parses and gathers the arguments
   args = parser.parse_args()
@@ -53,6 +54,8 @@ def main():
   if (args.create_random_graph):
     # Sets a random seed for reproducibility
     seed = 42
+    if (args.seed):
+      seed = args.seed
     
     # Generates the graph with the number of nodes, constant, and probability, then saves it.
     num_nodes = args.create_random_graph[0]
@@ -78,9 +81,10 @@ def main():
 
   # GRAPH ANALYSIS SECTION
   if (graph and args.analyze):
+    print("Graph Analysis:")
     # Multi BFS Traversal
     sources = args.multi_BFS
-    bfs_results, visited = helper.multi_search_bfs(graph, sources)
+    bfs_results, visited, edge_colors, node_colors = helper.multi_search_bfs(graph, sources)
     print(f"Multi-BFS Traversal using source(s) {sources}: {bfs_results}")
     print(f"Path tracking: {visited}")
     
@@ -101,7 +105,7 @@ def main():
     density_graph = helper.graph_density(graph)
     print(f"The Graph's measured density is: {density_graph}")
 
-  
+
     #Compute Average Shortest Path Length
     avg_spl = helper.avg_shortest_path_lenf(graph)
     if avg_spl:
@@ -116,9 +120,26 @@ def main():
   
   # GRAPH PLOTTING SECTION
   if (graph and args.plot):
-    # Specifies layout and displays the graph
+    # Options for the graph
     layout = nx.kamada_kawai_layout(graph)
-    nx.draw(graph, layout, with_labels=True, width=1, node_size=25)
+    options = {
+      "with_labels": True, 
+      "font_size": 10,
+      "verticalalignment": 'top',
+      "width": 1, 
+      "node_size": 25,
+      "edge_color": edge_colors,
+    }
+    
+    # Colors each isolated node in 'red', others in 'blue'
+    if (graph and isolated_nodes):
+      for node in isolated_nodes:
+        node_colors[node] = 'peru'
+      
+    options['node_color'] = node_colors
+      
+    # Displays the graph
+    nx.draw(graph, layout, **options)
     plt.show()
   else:
     print("There was no graph to be displayed...")
