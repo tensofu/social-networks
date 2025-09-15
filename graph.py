@@ -61,6 +61,7 @@ def main():
     num_nodes = args.create_random_graph[0]
     constant = args.create_random_graph[1]
     edge_probability = ( constant*np.log(num_nodes) ) / num_nodes
+    connected_components = []
     
     print(f"""Creating an Erdos-Renyi Randomized Graph with these parameters:
         seed = {seed}
@@ -79,6 +80,10 @@ def main():
   else:
     print("No --input or --create_random_graph arguments detected. No graph has been loaded.")
 
+  #variable declarations
+  sources = []
+  isolated_nodes = []
+  
   # GRAPH ANALYSIS SECTION
   if (graph and args.analyze):
     print("Graph Analysis:")
@@ -87,23 +92,30 @@ def main():
     bfs_results, visited, edge_colors, node_colors = helper.multi_search_bfs(graph, sources)
     print(f"Multi-BFS Traversal using source(s) {sources}: {bfs_results}")
     print(f"Path tracking: {visited}")
+    print()
     
     # Identifying connected components
     connected_components = helper.identify_connected_components(graph)
-    print(f"List of connected components: {connected_components}")
+    print(f"List of connected components:")
+    for cc,_,_ in connected_components:
+      print(cc, end = "")
+    print('\n')
     
     #Identify if cycles exist in graph
     cycle_bool = helper.cycle_detection(graph)
-    print("Cycle exists in the graph") if cycle_bool else print("No cycle exists in the graph")
+    print("A cycle exists in the graph") if cycle_bool else print("No cycle exists in the graph")
+    print()
 
     # Identifying isolated nodes
     isolated_nodes = helper.identify_isolate_nodes(graph)
     print(f"List of isolated nodes: {isolated_nodes}")
+    print()
 
     
     #Compute density of graph
     density_graph = helper.graph_density(graph)
     print(f"The Graph's measured density is: {density_graph}")
+    print()
 
 
     #Compute Average Shortest Path Length
@@ -112,6 +124,7 @@ def main():
       print(f"Average Shortest Path Length: {avg_spl}")    
     else:
       print("The graph is not connected, therefore we cannot compute the average shortest path length")
+    print()
   
   # Stops timer
   end_time = time.perf_counter()
@@ -134,15 +147,42 @@ def main():
     # Colors each isolated node in 'red', others in 'blue'
     if (graph and isolated_nodes):
       for node in isolated_nodes:
-        node_colors[node] = 'peru'
+        node_colors[int(node)] = 'peru'
       
     options['node_color'] = node_colors
       
     # Displays the graph
-    nx.draw(graph, layout, **options)
+    nx.draw(graph, layout, **options,)
+    
     plt.show()
+    
+
+  #option to visualize connected components
+  #iterates over each connected component and plots/displays them seperately
+    user_resp = input("Would you like to visually see each connected component of the graph (Y/n)? ")
+    if user_resp in {"Y","yes","Yes", "y"}:
+      for cc,cc_edges,color in connected_components:
+        options_cc = {
+        "with_labels": True, 
+        "font_size": 10,
+        "verticalalignment": 'top',
+        "width": 1, 
+        "node_size": 25,
+        "edge_color": color,
+        "nodelist":cc,
+        "edgelist":cc_edges
+        }
+        nx.draw(graph, layout, **options_cc)
+        plt.title("Connected Component")
+        plt.show()
+      
+    # Displays the graph
+    
+
+      
   else:
     print("There was no graph to be displayed...")
+
 
 
 # Runs the program

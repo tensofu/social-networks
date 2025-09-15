@@ -74,34 +74,39 @@ def multi_search_bfs(graph: nx.Graph, sources: list):
   return bfs_results, visited, edge_colors_array, source_node_color_array
 
 # Identifies connected components using a recursive DFS Search
-#   Iterates through each node in the graph, performs DFS search until all connected nodes are visited, then
-#   returns the connected component that sourced from that node. Repeat through every node in the graph that has
-#   not yet been visited.
+#   Iterates through each node in the graph, performs DFS search until all connected nodes & edges are visited from that node, then
+#   returns the connected component that sourced from that node, edges in the connected component, and an index for edge_color.
+#  Repeat through every node in the graph that has not yet been visited.
 def identify_connected_components(graph: nx.Graph):
   visited = set()
-  connected_components = []
+  connected_components_w_edges = []
+  color_index = 0
+
+  available_colors = ['red', 'blue', 'green', 'purple', 'orange', 'cyan', 'yellow', 'brown', 'pink', 'black']
   
   # Recursive DFS function
-  def dfs(node, current_component):
+  def dfs(node, current_component, traversed_edges,color_indx):
     visited.add(node)
     current_component.append(node)
     for neighbor in graph.neighbors(node):
       if neighbor not in visited:
-        dfs(neighbor, current_component)
+        dfs(neighbor, current_component,traversed_edges,color_index)
+      if (node,neighbor) not in traversed_edges or (neighbor,node) not in traversed_edges:
+        traversed_edges.add((node,neighbor))
+    
+
 
   for node in graph:
     if node not in visited:
       current_component = []
-      dfs(node, current_component)
-      connected_components.append(sorted(current_component))
-      
-  return connected_components
+      trav_edges =set() 
+      dfs(node, current_component,trav_edges,color_index)
+      connected_components_w_edges.append((sorted(current_component), trav_edges, available_colors[(color_index%len(available_colors))]))
+      color_index +=1
+  return connected_components_w_edges
 
 def identify_isolate_nodes(graph: nx.Graph):
-  isolated_nodes = []
-  for node in graph:
-    if (not any(graph.neighbors(node))):
-      isolated_nodes.append(node)
+  isolated_nodes = list(nx.isolates(graph))
   
   return isolated_nodes
 
@@ -132,10 +137,10 @@ def graph_density(graph: nx.Graph):
   max_possible_edges = (num_nodes*(num_nodes-1))/2
 
   density = num_edges/max_possible_edges
-  return density
+  return round(density,2)
 
 def avg_shortest_path_lenf(graph:nx.Graph):
-  #first check if graph is connected by using connected components function
+  #first check if graph is fully connected by using connected components function
   if len(identify_connected_components(graph)) == 1:
 
       #create dict to store nodes and shortest path lenf between nodes
@@ -146,7 +151,6 @@ def avg_shortest_path_lenf(graph:nx.Graph):
         node_dict[bfs_start_node] = {}
 
         #preform bfs on graph and store shortest path between nodes in dict:
-        bfs_results = [bfs_start_node]
         queue = Queue()
         queue.put((bfs_start_node,0))
         
@@ -180,7 +184,7 @@ def avg_shortest_path_lenf(graph:nx.Graph):
         num_paths +=len(node_dict[node])
         for neighbor in node_dict[node]:
           sum_shortestpaths+=node_dict[node][neighbor]
-      return (sum_shortestpaths/num_paths)
+      return round(sum_shortestpaths/num_paths,2)
 
   else:
     #graph is not connected
