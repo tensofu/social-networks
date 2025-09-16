@@ -19,9 +19,11 @@ python ./graph.py --input data.gml --analyze --plot
 
 ### Screenshots
 `python ./graph.py --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.gml`
+
 <img src="attachments/image.png" height=400px/>
 
 `python ./graph.py --create_random_graph 25 0.7 --multi_BFS 0 5 20 --analyze --plot --output data2.gml`
+
 <img src="attachments/image-1.png" height=400px/>
 
 # Setup Instructions
