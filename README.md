@@ -13,10 +13,16 @@ We utilized primarily the following packages when developing this program:
 ### Quick Examples
 ```bash
 python ./graph.py --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.gml
-python ./graph.py --create_random_graph 6 0.4 --multi_BFS 0 2 --analyze --plot --output data1.gml
 python ./graph.py --create_random_graph 25 0.7 --multi_BFS 0 5 20 --analyze --plot --output data2.gml
 python ./graph.py --input data.gml --analyze --plot
 ```
+
+### Screenshots
+`python ./graph.py --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.gml`
+<img src="attachments/image.png" height=400px/>
+
+`python ./graph.py --create_random_graph 25 0.7 --multi_BFS 0 5 20 --analyze --plot --output data2.gml`
+<img src="attachments/image-1.png" height=400px/>
 
 # Setup Instructions
 1. Ensure python and pip are working on your machine.
