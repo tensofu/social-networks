@@ -1,10 +1,8 @@
 import argparse
-import random
 import time
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-from queue import Queue
 from utils import helper
 
 
@@ -29,7 +27,7 @@ def main():
   parser.add_argument("--analyze", action="store_true")
   parser.add_argument("--plot", action="store_true")
   parser.add_argument("--output", type=str)
-  parser.add_argument("--seed", type=str)
+  parser.add_argument("--seed", type=int)
 
   # Parses and gathers the arguments
   args = parser.parse_args()
@@ -39,20 +37,28 @@ def main():
     args.create_random_graph[0] = int(args.create_random_graph[0]) 
 
   # Prints out all of the arguments passed (or not) for debugging purposes.
+  print("Arguments:")
   print(args.input, args.create_random_graph, args.multi_BFS, args.analyze, args.plot, args.output)
+  print() 
   
   # OVERRIDES ARGUMENT --input IF --create_random_graph ARGUMENTS ARE PRESENT (sets --input arguments to None)
   if (args.create_random_graph and args.input):
     print(f"The arguments for flags [--input] & [--create_random_graph] both coexist. Proceeding to override and nullify the [--input] argument.")
     args.input = None
     
+  # Handles if there are not sufficient parameters
+  if not args.plot:
+    print("--plot is not present. The graph will not be shown.")
+  if not args.analyze:
+    print("--analyze is not present. There will be no analysis present in the terminal.")
+  print()
     
   # GRAPH CONSTRUCTION SECTION
   graph = None
 
   # Generates an Erdos-Renyi Graph using a high level implementation (only create if the arguments for --create_random_graph are present)
   if (args.create_random_graph):
-    # Sets a random seed for reproducibility
+    # Sets a seed for reproducibility
     seed = 42
     if (args.seed):
       seed = args.seed
@@ -71,14 +77,24 @@ def main():
 
     graph = nx.erdos_renyi_graph(n=num_nodes, p=edge_probability, seed=seed)
     
+  elif (args.input):
+    try:
+      graph = nx.read_gml(f"data/{args.input}")
+    except nx.NetworkXError as e:
+      print(f"Error: Could not read the file as a GML graph: {e}")
+      print("Please ensure the file is a valid GML format.")
+      return
+    except FileNotFoundError:
+      print(f"File `data/{args.input}` was not found. Please specify an existing .gml file inside the `data/` directory.")
+      return
+  else:
+    print("No --input or --create_random_graph arguments detected. No graph has been loaded.")
+    
+  if (graph and args.output):
     # Saves the graph to the designated output file
     nx.write_gml(graph, f"data/{args.output}")
     print(f"Graph saved to data/{args.output}")
     print()
-  elif (args.input):
-    graph = nx.read_gml(f"data/{args.input}")
-  else:
-    print("No --input or --create_random_graph arguments detected. No graph has been loaded.")
 
   #variable declarations
   sources = []
@@ -141,7 +157,6 @@ def main():
       "verticalalignment": 'top',
       "width": 1, 
       "node_size": 25,
-      "edge_color": edge_colors,
     }
     
     # Colors each isolated node in 'red', others in 'blue'
@@ -149,7 +164,11 @@ def main():
       for node in isolated_nodes:
         node_colors[int(node)] = 'peru'
       
-    options['node_color'] = node_colors
+    # Checks if edge_colors or node_colors maps exists. If they do, apply it.
+    if 'edge_colors' in locals():
+      options["edge_color"] = edge_colors
+    if 'node_colors' in locals():
+      options['node_color'] = node_colors
       
     # Displays the graph
     nx.draw(graph, layout, **options,)
@@ -158,6 +177,8 @@ def main():
     
 
   #option to visualize connected components
+    if 'connected_components' not in locals():
+      return
   #iterates over each connected component and plots/displays them seperately
     user_resp = input("Would you like to visually see each connected component of the graph (Y/n)? ")
     if user_resp in {"Y","yes","Yes", "y"}:
@@ -178,8 +199,6 @@ def main():
       
     # Displays the graph
     
-
-      
   else:
     print("There was no graph to be displayed...")
 
@@ -196,5 +215,6 @@ CLI Tests (generating a graph, reading a graph, input & output present, filename
   python ./graph.py --input data.gml --analyze --plot
   python ./graph.py --input graph_file.gml --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.gml
   python ./graph.py --input graph_file.gml --create_random_graph 200 1.5 --multi_BFS 0 5 20 --analyze --plot --output final_graph.txt
+  python ./graph.py --create_random_graph 25 0.7 --multi_BFS 0 5 20 --analyze --plot --output data1.gml
 '''
 

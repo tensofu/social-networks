@@ -51,11 +51,14 @@ def multi_search_bfs(graph: nx.Graph, sources: list):
   while (not queue.empty()):
     current_node = queue.get()
     # Gets the list of neighbors for a specified node
-    neighbors_iterator = graph.neighbors(current_node)
+    try:
+      neighbors_iterator = graph.neighbors(current_node)
+    except nx.NetworkXError:
+      neighbors_iterator = graph.neighbors(str(current_node))
     for item in neighbors_iterator:
       if (item not in bfs_results):
         queue.put(item)
-        edge = (current_node, item)
+        edge = (int(current_node), int(item))
         if (edge not in visited):
           visited.append(edge)
           edge_colors[tuple(sorted(edge))] = source_to_color[current_node]
