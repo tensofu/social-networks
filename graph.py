@@ -141,7 +141,8 @@ def main():
     else:
       print("The graph is not connected, therefore we cannot compute the average shortest path length")
     print()
-  
+    
+    
   # Stops timer
   end_time = time.perf_counter()
   elapsed_time = end_time - start_time

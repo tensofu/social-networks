@@ -1,8 +1,13 @@
 import networkx as nx
 from queue import Queue
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
+import os
+import csv
+import random
 
 # This program contains functions that will help do miscallenous things such as file checking and etc.
-
 
 # Checks if the given filename is a valid .gml filename.
 def is_gml(filename: str) -> bool:
@@ -193,3 +198,284 @@ def avg_shortest_path_lenf(graph:nx.Graph):
     #graph is not connected
     return False
   
+
+# Check if signed graph is balanced using BFS-based methods.
+def verify_structural_balance(G):
+  if not nx.get_edge_attributes(G, 'sign'):
+    print("No edge signs found in the graph. Cannot verify structural balance.")
+    return False
+  
+  # Check for negative cycles which indicate imbalance
+  # Convert to signed graph representation
+  positive_edges = [(u, v) for u, v, d in G.edges(data=True) if d.get('sign', 1) > 0]
+  negative_edges = [(u, v) for u, v, d in G.edges(data=True) if d.get('sign', 1) < 0]
+  
+  # Create graph with only positive edges
+  G_pos = G.edge_subgraph(positive_edges).copy() if positive_edges else nx.Graph()
+  
+  # Check if we can 2-color the components
+  is_balanced = True
+  
+  # For each connected component of the original graph
+  for component in nx.connected_components(G):
+    if len(component) < 3:
+      continue
+        
+    subgraph = G.subgraph(component)
+    
+    # Check triangles for balance
+    triangles = [cycle for cycle in nx.cycles.cycle_basis(subgraph) if len(cycle) == 3]
+    
+    for triangle in triangles:
+      # Count negative edges in triangle
+      neg_count = 0
+      for i in range(3):
+        u, v = triangle[i], triangle[(i+1)%3]
+        if subgraph.has_edge(u, v):
+          if subgraph[u][v].get('sign', 1) < 0:
+            neg_count += 1
+        
+        # Triangle is balanced if it has 0 or 2 negative edges
+        if neg_count == 1 or neg_count == 3:
+          is_balanced = False
+          break
+    
+    if not is_balanced:
+      break
+  
+  print(f"Graph is {'balanced' if is_balanced else 'NOT balanced'}")
+  return is_balanced
+
+# Computing
+def compute_clustering_coefficients(G):
+  """Compute clustering coefficient for each node."""
+  clustering = nx.clustering(G)
+  avg_clustering = nx.average_clustering(G)
+  print(f"Average clustering coefficient: {avg_clustering:.4f}")
+  return clustering
+
+
+def compute_neighborhood_overlap(G):
+  """Compute neighborhood overlap for each edge."""
+  overlap = {}
+  for u, v in G.edges():
+    neighbors_u = set(G.neighbors(u))
+    neighbors_v = set(G.neighbors(v))
+    
+    # Remove the endpoints from each other's neighbor sets
+    neighbors_u.discard(v)
+    neighbors_v.discard(u)
+    
+    # Calculate overlap
+    if len(neighbors_u) + len(neighbors_v) > 0:
+      overlap[(u, v)] = len(neighbors_u & neighbors_v) / len(neighbors_u | neighbors_v)
+    else:
+      overlap[(u, v)] = 0
+  
+  if overlap:
+    avg_overlap = sum(overlap.values()) / len(overlap)
+    print(f"Average neighborhood overlap: {avg_overlap:.4f}")
+  
+  return overlap
+
+
+# Statistical test for homophily using node attributes.
+def verify_homophily(G):
+  # Try different common attribute names (excluding gender)
+  attr_names = ['color', 'group', 'type', 'community', 'cluster']
+  attr_found = None
+  
+  for attr in attr_names:
+    if nx.get_node_attributes(G, attr):
+      attr_found = attr
+      break
+  
+  if not attr_found:
+    print("No suitable node attributes found for homophily test.")
+    print("Consider adding node attributes like 'group' or 'community' for homophily analysis.")
+    return
+  
+  # Calculate assortativity coefficient
+  assortativity = nx.attribute_assortativity_coefficient(G, attr_found)
+  print(f"Assortativity coefficient for '{attr_found}': {assortativity:.4f}")
+  
+  # Perform statistical test (permutation test)
+  n_permutations = 1000
+  random_assortativities = []
+  
+  node_attrs = nx.get_node_attributes(G, attr_found)
+  nodes = list(G.nodes())
+  values = list(node_attrs.values())
+  
+  for _ in range(n_permutations):
+    random.shuffle(values)
+    random_attrs = dict(zip(nodes, values))
+    nx.set_node_attributes(G, random_attrs, attr_found)
+    random_assortativities.append(nx.attribute_assortativity_coefficient(G, attr_found))
+  
+  # Restore original attributes
+  nx.set_node_attributes(G, node_attrs, attr_found)
+  
+  # Calculate p-value
+  p_value = sum(1 for r in random_assortativities if abs(r) >= abs(assortativity)) / n_permutations
+  
+  print(f"Homophily test (p-value): {p_value:.4f}")
+  if p_value < 0.05:
+    print("Significant homophily detected (p < 0.05)")
+  else:
+    print("No significant homophily detected")
+    
+    
+# PLOTTING FUNCTIONS
+def plot_clustering_coefficient(G, clustering):
+  """Plot graph with node size based on clustering coefficient."""
+  pos = nx.spring_layout(G, seed=42, k=1/np.sqrt(len(G.nodes())))
+  
+  # Node sizes based on clustering coefficient
+  node_sizes = [500 * (clustering[node] + 0.1) for node in G.nodes()]
+  
+  # Node colors based on degree
+  node_colors = [G.degree(node) for node in G.nodes()]
+  
+  plt.figure(figsize=(12, 8))
+  nx.draw_networkx_nodes(G, pos, node_size=node_sizes, 
+                        node_color=node_colors, cmap='viridis',
+                        alpha=0.7)
+  nx.draw_networkx_edges(G, pos, alpha=0.3)
+  nx.draw_networkx_labels(G, pos, font_size=8)
+  
+  plt.title("Graph Visualization: Node Size = Clustering Coefficient, Color = Degree")
+  sm = plt.cm.ScalarMappable(cmap='viridis', 
+                              norm=plt.Normalize(vmin=min(node_colors), vmax=max(node_colors)))
+  sm.set_array([])
+  plt.axis('off')
+  plt.tight_layout()
+  plt.show()
+
+
+def plot_neighborhood_overlap(G, overlap):
+    """Plot graph with edge thickness based on neighborhood overlap."""
+    pos = nx.spring_layout(G, seed=42, k=1/np.sqrt(len(G.nodes())))
+    
+    # Edge widths based on neighborhood overlap
+    edge_widths = [5 * overlap.get((u, v), overlap.get((v, u), 0)) + 0.5 
+                  for u, v in G.edges()]
+    
+    # Edge colors based on sum of endpoint degrees
+    edge_colors = [G.degree(u) + G.degree(v) for u, v in G.edges()]
+    
+    plt.figure(figsize=(12, 8))
+    nx.draw_networkx_nodes(G, pos, node_size=300, node_color='lightblue', alpha=0.7)
+    edges = nx.draw_networkx_edges(G, pos, width=edge_widths, 
+                                   edge_color=edge_colors, edge_cmap=plt.cm.RdYlBu,
+                                   edge_vmin=min(edge_colors) if edge_colors else 0,
+                                   edge_vmax=max(edge_colors) if edge_colors else 1)
+    nx.draw_networkx_labels(G, pos, font_size=8)
+    
+    plt.title("Graph Visualization: Edge Thickness = Neighborhood Overlap, Color = Sum of Degrees")
+    if edges:
+        plt.colorbar(edges, label='Sum of Endpoint Degrees', orientation='horizontal', pad=0.1)
+    plt.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_attributes(G):
+  """Plot graph with node colors and edge signs visualization."""
+  pos = nx.spring_layout(G, seed=42, k=1/np.sqrt(len(G.nodes())))
+  
+  # Get node attributes for coloring
+  node_attrs = None
+  attr_name = 'default'
+  for attr in ['color', 'group', 'type', 'community', 'cluster']:
+    if nx.get_node_attributes(G, attr):
+      node_attrs = nx.get_node_attributes(G, attr)
+      attr_name = attr
+      break
+  
+  if node_attrs:
+    # Convert attributes to numeric values for coloring
+    unique_attrs = list(set(node_attrs.values()))
+    attr_to_num = {attr: i for i, attr in enumerate(unique_attrs)}
+    node_colors = [attr_to_num[node_attrs[node]] for node in G.nodes()]
+  else:
+    # Use degree centrality as default coloring
+    node_colors = [G.degree(node) for node in G.nodes()]
+    attr_name = 'degree'
+  
+  plt.figure(figsize=(12, 8))
+  
+  # Draw nodes
+  nx.draw_networkx_nodes(G, pos, node_size=300, node_color=node_colors, 
+                        cmap='tab10' if node_attrs else 'viridis', alpha=0.7)
+  
+  # Draw edges with different styles for positive/negative signs
+  edge_signs = nx.get_edge_attributes(G, 'sign')
+  if edge_signs:
+    pos_edges = [(u, v) for u, v in G.edges() if edge_signs.get((u, v), edge_signs.get((v, u), 1)) > 0]
+    neg_edges = [(u, v) for u, v in G.edges() if edge_signs.get((u, v), edge_signs.get((v, u), 1)) <= 0]
+    
+    nx.draw_networkx_edges(G, pos, edgelist=pos_edges, edge_color='green', 
+                          width=2, alpha=0.6, label='Positive')
+    nx.draw_networkx_edges(G, pos, edgelist=neg_edges, edge_color='red', 
+                          width=2, style='dashed', alpha=0.6, label='Negative')
+    plt.legend()
+  else:
+    nx.draw_networkx_edges(G, pos, alpha=0.4)
+  
+  nx.draw_networkx_labels(G, pos, font_size=8)
+  
+  plt.title(f"Graph Attributes: Node Color = {attr_name}, Edge Style = Sign")
+  plt.axis('off')
+  plt.tight_layout()
+  plt.show()
+
+
+"""Animate graph evolution based on temporal edge changes."""
+def temporal_simulation(G, temporal_file):
+  if not os.path.exists(temporal_file):
+    print(f"Temporal simulation file {temporal_file} not found.")
+    return
+  
+  # Read temporal data
+  edge_changes = []
+  with open(temporal_file, 'r') as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+      edge_changes.append({
+        'source': int(row['source']),
+        'target': int(row['target']),
+        'timestamp': float(row['timestamp']),
+        'action': row['action']
+      })
+  
+  # Sort by timestamp
+  edge_changes.sort(key=lambda x: x['timestamp'])
+  
+  # Create animation
+  fig, ax = plt.subplots(figsize=(10, 8))
+  pos = nx.spring_layout(G, seed=42, k=1/np.sqrt(len(G.nodes())))
+  
+  G_temp = nx.Graph()
+  G_temp.add_nodes_from(G.nodes())
+  
+  def update(frame):
+      ax.clear()
+      
+      if frame < len(edge_changes):
+          change = edge_changes[frame]
+          if change['action'] == 'add':
+              G_temp.add_edge(change['source'], change['target'])
+          elif change['action'] == 'remove' and G_temp.has_edge(change['source'], change['target']):
+              G_temp.remove_edge(change['source'], change['target'])
+      
+      nx.draw(G_temp, pos, ax=ax, with_labels=True, node_size=300, 
+              node_color='lightblue', edge_color='gray')
+      ax.set_title(f"Temporal Evolution - Step {frame}/{len(edge_changes)}")
+  
+  ani = animation.FuncAnimation(fig, update, frames=len(edge_changes)+1, 
+                                interval=500, repeat=True)
+  plt.show()
+  
+  return ani
+
