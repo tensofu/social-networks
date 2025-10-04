@@ -11,6 +11,11 @@ python ./graph_analysis.py --input data.gml --plot T --temporal_simulation edges
 python ./graph_analysis.py --input data.gml --plot P --verify_homophily --verify_balanced_graph --output output.gml
 ```
 
+### Screenshots
+`python ./graph_analysis.py --input data.gml --components 3 --plot C --simulate_failures 5 --output output.gml`
+
+<img src="attachments/image-2-1.png" height=400px/>
+
 # Setup Instructions
 1. Ensure python and pip are working on your machine.
 2. Download or clone the repository (make sure you have `git` installed):

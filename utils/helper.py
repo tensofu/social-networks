@@ -532,6 +532,10 @@ def robustness_check(G, k, n_simulations=100):
 # Remove k random edges before partitioning.
 def simulate_failures(G, k):
   print(f"---SIMULATING FAILURES (k={k})---")
+  
+  # Obtains the average shortest path before
+  avg_short_before = avg_shortest_path_lenf(G)
+  
   G_failures = G.copy()
   edges = list(G_failures.edges())
   
@@ -542,5 +546,9 @@ def simulate_failures(G, k):
   edges_to_remove = random.sample(edges, k)
   G_failures.remove_edges_from(edges_to_remove)
   print(f"Removed {k} random edges for simulating failures")
+  
+  # Finds the average shortest path after
+  avg_short_after = avg_shortest_path_lenf(G_failures) 
+  print(f"  Change in average shortest path: {avg_short_before} -> {avg_short_after if avg_short_after else "None (graph is disconnected)"}")
   
   return G_failures
