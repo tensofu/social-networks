@@ -197,7 +197,10 @@ def avg_shortest_path_lenf(graph:nx.Graph):
   else:
     #graph is not connected
     return False
-  
+
+
+
+### ASSIGNMENT PART 2
 
 # Check if signed graph is balanced using BFS-based methods.
 def verify_structural_balance(G):
@@ -407,7 +410,7 @@ def plot_attributes(G):
   
   # Draw nodes
   nx.draw_networkx_nodes(G, pos, node_size=300, node_color=node_colors, 
-                        cmap='tab10' if node_attrs else 'viridis', alpha=0.7)
+                        cmap='tab10' if node_attrs else 'viridis', alpha=1.0)
   
   # Draw edges with different styles for positive/negative signs
   edge_signs = nx.get_edge_attributes(G, 'sign')
@@ -443,8 +446,8 @@ def temporal_simulation(G, temporal_file):
     reader = csv.DictReader(f)
     for row in reader:
       edge_changes.append({
-        'source': int(row['source']),
-        'target': int(row['target']),
+        'source': str(row['source']),
+        'target': str(row['target']),
         'timestamp': float(row['timestamp']),
         'action': row['action']
       })
@@ -460,22 +463,84 @@ def temporal_simulation(G, temporal_file):
   G_temp.add_nodes_from(G.nodes())
   
   def update(frame):
-      ax.clear()
-      
-      if frame < len(edge_changes):
-          change = edge_changes[frame]
-          if change['action'] == 'add':
-              G_temp.add_edge(change['source'], change['target'])
-          elif change['action'] == 'remove' and G_temp.has_edge(change['source'], change['target']):
-              G_temp.remove_edge(change['source'], change['target'])
-      
-      nx.draw(G_temp, pos, ax=ax, with_labels=True, node_size=300, 
-              node_color='lightblue', edge_color='gray')
-      ax.set_title(f"Temporal Evolution - Step {frame}/{len(edge_changes)}")
+    ax.clear()
+    
+    if frame < len(edge_changes):
+      change = edge_changes[frame]
+      if change['action'] == 'add':
+        G_temp.add_edge(change['source'], change['target'])
+      elif change['action'] == 'remove' and G_temp.has_edge(change['source'], change['target']):
+        G_temp.remove_edge(change['source'], change['target'])
+    
+    nx.draw(G_temp, pos, ax=ax, with_labels=True, node_size=300, 
+            node_color='lightblue', edge_color='gray')
+    ax.set_title(f"Temporal Evolution - Step {frame}/{len(edge_changes)}")
   
   ani = animation.FuncAnimation(fig, update, frames=len(edge_changes)+1, 
-                                interval=500, repeat=True)
+                                interval=500, repeat=False)
   plt.show()
   
   return ani
 
+
+# Simulate random edge failures and analyze robustness.
+def robustness_check(G, k, n_simulations=100):
+  print(f"\nSimulating {n_simulations} rounds of {k} random edge failures...")
+  
+  results = {
+    'num_components': [],
+    'max_component_size': [],
+    'min_component_size': []
+  }
+  
+  original_components = list(nx.connected_components(G))
+  original_num_components = len(original_components)
+  
+  for sim in range(n_simulations):
+    G_temp = G.copy()
+    edges = list(G_temp.edges())
+    
+    if k > len(edges):
+      print(f"Warning: k ({k}) is larger than number of edges ({len(edges)})")
+      k = min(k, len(edges))
+    
+    # Remove k random edges
+    edges_to_remove = random.sample(edges, k)
+    G_temp.remove_edges_from(edges_to_remove)
+    
+    # Analyze components
+    components = list(nx.connected_components(G_temp))
+    component_sizes = [len(c) for c in components]
+    
+    results['num_components'].append(len(components))
+    results['max_component_size'].append(max(component_sizes) if component_sizes else 0)
+    results['min_component_size'].append(min(component_sizes) if component_sizes else 0)
+  
+  # Report statistics
+  print(f"Original number of components: {original_num_components}")
+  print(f"After {k} edge failures:")
+  print(f"  Average number of components: {np.mean(results['num_components']):.2f}")
+  print(f"  Max component size (avg): {np.mean(results['max_component_size']):.2f}")
+  print(f"  Min component size (avg): {np.mean(results['min_component_size']):.2f}")
+  
+  # Check if original clusters persist (simplified check)
+  cluster_persistence = sum(1 for n in results['num_components'] 
+                          if n <= original_num_components * 1.5) / n_simulations
+  print(f"  Cluster persistence rate: {cluster_persistence:.2%}")
+
+
+# Remove k random edges before partitioning.
+def simulate_failures(G, k):
+  print(f"---SIMULATING FAILURES (k={k})---")
+  G_failures = G.copy()
+  edges = list(G_failures.edges())
+  
+  if k > len(edges):
+    print(f"Warning: k ({k}) is larger than number of edges ({len(edges)})")
+    k = min(k, len(edges))
+  
+  edges_to_remove = random.sample(edges, k)
+  G_failures.remove_edges_from(edges_to_remove)
+  print(f"Removed {k} random edges for simulating failures")
+  
+  return G_failures

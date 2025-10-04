@@ -25,22 +25,16 @@ def main():
 
   # Adds additional options and arguments to the parser:
   parser.add_argument("--components", type=int)
-  parser.add_argument("--robustness_check", nargs="+", type=int)
   parser.add_argument("--split_output_dir", action="store_true")
   parser.add_argument("--verify_homophily", action="store_true")
   parser.add_argument("--verify_balanced_graph", action="store_true")
   parser.add_argument("--temporal_simulation", type=str)
 
   parser.add_argument("--simulate_failures", type=int)
+  parser.add_argument("--robustness_check", type=int)
 
   # Parses and gathers the arguments
   args = parser.parse_args()
-
-  # Prints out all of the arguments passed (or not) for debugging purposes.
-  print("Arguments:")
-  print(args.input, args.plot, args.output, args.components, args.robustness_check, args.split_output_dir)
-  print(args.verify_homophily, args.verify_balanced_graph, args.temporal_simulation, args.simulate_failures)
-  print() 
     
   # Handles if there are not sufficient parameters
   if not args.plot:
@@ -63,12 +57,11 @@ def main():
   else:
     print("No --input No graph has been loaded.")
     
-  if (graph and args.output):
-    # Saves the graph to the designated output file
-    nx.write_gml(graph, f"data/{args.output}")
-    print(f"Graph saved to data/{args.output}")
-    print()
-
+  # Compute metrics
+  clustering = helper.compute_clustering_coefficients(graph)
+  overlap = helper.compute_neighborhood_overlap(graph)
+  print()
+    
   # Partition components with the Girvan Newman method
   if args.components:
     print(f"Partitioning graph into {args.components} components...")
@@ -97,18 +90,24 @@ def main():
 
   # Verify homophily
   if args.verify_homophily:
+    print("---VERIFY HOMOPHILY TEST---")
     helper.verify_homophily(graph)
     print()
   
   # Verify balanced graph
   if args.verify_balanced_graph:
+    print("---VERIFY BALANCED GRAPH TEST---")
     helper.verify_structural_balance(graph)
     print()
-  
-  # Compute metrics
-  clustering = helper.compute_clustering_coefficients(graph)
-  overlap = helper.compute_neighborhood_overlap(graph)
-  print()
+    
+  # Simulate failures
+  if args.simulate_failures:
+    graph = helper.simulate_failures(graph, args.simulate_failures)
+    print()
+    
+  # Handle robustness check
+  if args.robustness_check and args.simulate_failures:
+    graph = helper.robustness_check(graph, args.simulate_failures, args.robustness_check)
   
   # GRAPH PLOTTING SECTION
   if args.plot == 'C':
@@ -123,6 +122,12 @@ def main():
     
   else:
     print("There was no graph to be displayed...")
+    
+  # Saves the graph to the designated output file
+  if args.output:
+    nx.write_gml(graph, f"data/{args.output}")
+    print(f"Graph saved to data/{args.output}")
+    print()
 
 
 

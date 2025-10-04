@@ -102,113 +102,141 @@ graph [
   edge [
     source 0
     target 2
+    sign 1
   ]
   edge [
     source 0
     target 8
+    sign 1
   ]
   edge [
     source 0
     target 10
+    sign 1
   ]
   edge [
     source 0
     target 13
+    sign 1
   ]
   edge [
     source 0
     target 20
+    sign 1
   ]
   edge [
     source 1
     target 19
+    sign 1
   ]
   edge [
     source 1
     target 22
+    sign -1
   ]
   edge [
     source 2
     target 23
+    sign 1
   ]
   edge [
     source 3
     target 24
+    sign 1
   ]
   edge [
     source 4
     target 9
+    sign 1
   ]
   edge [
     source 4
     target 15
+    sign 1
   ]
   edge [
     source 5
     target 20
+    sign 1
   ]
   edge [
     source 5
     target 22
+    sign 1
   ]
   edge [
     source 6
     target 9
+    sign 1
   ]
   edge [
     source 6
     target 12
+    sign 1
   ]
   edge [
     source 6
     target 14
+    sign 1
   ]
   edge [
     source 7
     target 21
+    sign 1
   ]
   edge [
     source 8
     target 10
+    sign 1
   ]
   edge [
     source 10
     target 13
+    sign 1
   ]
   edge [
     source 10
     target 23
+    sign 1
   ]
   edge [
     source 12
     target 15
+    sign 1
   ]
   edge [
     source 12
     target 21
+    sign 1
   ]
   edge [
     source 14
     target 22
+    sign 1
   ]
   edge [
     source 15
     target 17
+    sign 1
   ]
   edge [
     source 16
     target 22
+    sign 1
   ]
   edge [
     source 20
     target 21
+    sign 1
   ]
   edge [
     source 22
     target 23
+    sign 1
   ]
   edge [
     source 22
     target 24
+    sign 1
   ]
 ]
