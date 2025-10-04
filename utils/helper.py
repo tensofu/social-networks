@@ -434,7 +434,7 @@ def plot_attributes(G):
   plt.show()
 
 
-"""Animate graph evolution based on temporal edge changes."""
+# Animate graph evolution based on temporal edge changes.
 def temporal_simulation(G, temporal_file):
   if not os.path.exists(temporal_file):
     print(f"Temporal simulation file {temporal_file} not found.")
@@ -459,7 +459,7 @@ def temporal_simulation(G, temporal_file):
   fig, ax = plt.subplots(figsize=(10, 8))
   pos = nx.spring_layout(G, seed=42, k=1/np.sqrt(len(G.nodes())))
   
-  G_temp = nx.Graph()
+  G_temp = G.copy()
   G_temp.add_nodes_from(G.nodes())
   
   def update(frame):
