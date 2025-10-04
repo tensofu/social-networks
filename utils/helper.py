@@ -530,11 +530,18 @@ def robustness_check(G, k, n_simulations=100):
 
 
 # Remove k random edges before partitioning.
-def simulate_failures(G, k):
+def simulate_failures(G:nx.Graph, k):
   print(f"---SIMULATING FAILURES (k={k})---")
   
   # Obtains the average shortest path before
   avg_short_before = avg_shortest_path_lenf(G)
+  
+  # Get betweenness centrality before
+  betweenness_before = nx.betweenness_centrality(G)
+  avg_betweenness_before = sum(betweenness_before.values()) / len(betweenness_before)
+  
+  # Count connected components before
+  num_components_before = nx.number_connected_components(G)
   
   G_failures = G.copy()
   edges = list(G_failures.edges())
@@ -547,8 +554,23 @@ def simulate_failures(G, k):
   G_failures.remove_edges_from(edges_to_remove)
   print(f"Removed {k} random edges for simulating failures")
   
+  # Count connected components after
+  num_components_after = nx.number_connected_components(G_failures)
+  print(f"  Number of disconnected components: {num_components_before} -> {num_components_after}")
+  
+  # Get betweenness centrality after
+  betweenness_after = nx.betweenness_centrality(G_failures)
+  avg_betweenness_after = sum(betweenness_after.values()) / len(betweenness_after)
+  
+  # Calculate impact on betweenness centrality
+  betweenness_change = avg_betweenness_after - avg_betweenness_before
+  betweenness_pct_change = (betweenness_change / avg_betweenness_before * 100) if avg_betweenness_before > 0 else 0
+  
+  print(f"  Average betweenness centrality: {avg_betweenness_before:.6f} -> {avg_betweenness_after:.6f}")
+  print(f"    Betweenness centrality change: {betweenness_change:+.6f} ({betweenness_pct_change:+.2f}%)")
+  
   # Finds the average shortest path after
   avg_short_after = avg_shortest_path_lenf(G_failures) 
-  print(f"  Change in average shortest path: {avg_short_before} -> {avg_short_after if avg_short_after else "None (graph is disconnected)"}")
+  print(f"  Change in average shortest path: {avg_short_before} -> {avg_short_after if avg_short_after else 'None (GRAPH IS DISCONNECTED)'}")
   
   return G_failures
