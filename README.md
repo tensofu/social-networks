@@ -16,6 +16,10 @@ python ./graph_analysis.py --input data.gml --plot P --verify_homophily --verify
 
 <img src="attachments/image-2-1.png" height=400px/>
 
+`python ./graph_analysis.py --input data.gml --plot P --verify_homophily --verify_balanced_graph --output output.gml`
+
+<img src="attachments/image-2-2.png" height=400px/>
+
 # Setup Instructions
 1. Ensure python and pip are working on your machine.
 2. Download or clone the repository (make sure you have `git` installed):
