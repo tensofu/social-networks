@@ -2,23 +2,21 @@
 
 This project is built upon the previous graph assignment in order to add more functions to analyze the graph.
 
-The usage will consist of running flags and arguments in for executing certain tasks. Be sure to use an environment with all of the packages listed in `requirements.txt` present.
-
 ### Quick Examples
 ```bash
 python ./graph_analysis.py --input data.gml --components 3 --plot C --simulate_failures 5 --output output.gml
 python ./graph_analysis.py --input data.gml --plot T --temporal_simulation edges.csv
 python ./graph_analysis.py --input data.gml --plot P --verify_homophily --verify_balanced_graph --output output.gml
+python ./graph_analysis.py --input data.gml --plot N
 ```
 
-### Screenshots
-`python ./graph_analysis.py --input data.gml --components 3 --plot C --simulate_failures 5 --output output.gml`
+### Approach
 
-<img src="attachments/image-2-1.png" height=400px/>
+#### Coefficient Computation
+The coefficients were computed by utilizing NetworkX's `clustering` and `average_clustering` functions, which took the sum of local clustering for each node, divided by the total number of nodes.
 
-`python ./graph_analysis.py --input data.gml --plot P --verify_homophily --verify_balanced_graph --output output.gml`
-
-<img src="attachments/image-2-2.png" height=400px/>
+#### Failure Simulation
+The failures were simulated by taking a integer value `k`, and deleting `k` edges from a graph according to a random sample.
 
 # Setup Instructions
 1. Ensure python and pip are working on your machine.
@@ -36,7 +34,6 @@ python -m venv venv
 ```bash
 # (on macOS/Linux)
 source venv/bin/activate
-
 # (on Windows via Command Prompt)
 venv\Scripts\activate
 ```
@@ -44,6 +41,20 @@ venv\Scripts\activate
 ```bash
 pip install -r requirements.txt
 ```
+
+### Screenshots
+`python ./graph_analysis.py --input data.gml --components 3 --plot C --simulate_failures 5 --output output.gml`
+
+<img src="attachments/image-2-1.png" height=400px/>
+
+`python ./graph_analysis.py --input data.gml --plot P --verify_homophily --verify_balanced_graph --output output.gml`
+
+<img src="attachments/image-2-2.png" height=400px/>
+
+`python ./graph_analysis.py --input data.gml --plot N`
+
+<img src="attachments/image-2-3.png" height=400px/>
+
 
 # Project Architecture
 `graph_analysis.py` is the main program to run for this assignment.
