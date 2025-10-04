@@ -1,6 +1,6 @@
 # Description
 
-This project is bult upon the previous Erdos-Renyi Graph generation in order to add more functions to analyze a said graph.
+This project is built upon the previous graph assignment in order to add more functions to analyze the graph.
 
 The usage will consist of running flags and arguments in for executing certain tasks. Be sure to use an environment with all of the packages listed in `requirements.txt` present.
 
