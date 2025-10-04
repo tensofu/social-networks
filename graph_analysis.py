@@ -73,7 +73,13 @@ def main():
         break
     
     print(f"Found {len(communities)} communities:")
+    
+    # Assign community labels to nodes
     for i, community in enumerate(communities):
+      for node in community:
+        graph.nodes[node]['community'] = i + 1
+        graph.nodes[node]['community_label'] = f"Community {i + 1}"
+      
       print(f"  Community {i+1}: {len(community)} nodes - {sorted(list(community))[:10]}{'...' if len(community) > 10 else ''}")
     
     # Export components separately if requested
@@ -108,6 +114,12 @@ def main():
   # Handle robustness check
   if args.robustness_check and args.simulate_failures:
     graph = helper.robustness_check(graph, args.simulate_failures, args.robustness_check)
+    
+  # Saves the graph to the designated output file
+  if args.output:
+    nx.write_gml(graph, f"data/{args.output}")
+    print(f"Graph saved to data/{args.output}")
+    print()
   
   # GRAPH PLOTTING SECTION
   if args.plot == 'C':
@@ -122,12 +134,6 @@ def main():
     
   else:
     print("There was no graph to be displayed...")
-    
-  # Saves the graph to the designated output file
-  if args.output:
-    nx.write_gml(graph, f"data/{args.output}")
-    print(f"Graph saved to data/{args.output}")
-    print()
 
 
 
