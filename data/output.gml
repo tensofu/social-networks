@@ -190,21 +190,6 @@ graph [
     sign 1
   ]
   edge [
-    source 3
-    target 24
-    sign 1
-  ]
-  edge [
-    source 4
-    target 9
-    sign 1
-  ]
-  edge [
-    source 4
-    target 15
-    sign 1
-  ]
-  edge [
     source 4
     target 18
     sign 1
@@ -256,17 +241,7 @@ graph [
   ]
   edge [
     source 11
-    target 13
-    sign 1
-  ]
-  edge [
-    source 11
     target 18
-    sign 1
-  ]
-  edge [
-    source 12
-    target 15
     sign 1
   ]
   edge [

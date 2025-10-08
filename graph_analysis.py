@@ -112,8 +112,8 @@ def main():
     print()
     
   # Handle robustness check
-  if args.robustness_check and args.simulate_failures:
-    graph = helper.robustness_check(graph, args.simulate_failures, args.robustness_check)
+  if args.robustness_check:
+    graph = helper.robustness_check(graph, args.robustness_check)
     
   # Saves the graph to the designated output file
   if args.output:
