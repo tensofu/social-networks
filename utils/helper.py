@@ -302,6 +302,9 @@ def verify_homophily(G):
   assortativity = nx.attribute_assortativity_coefficient(G, attr_found)
   print(f"Assortativity coefficient for '{attr_found}': {assortativity:.4f}")
   
+
+
+
   # Perform statistical test (permutation test)
   n_permutations = 1000
   random_assortativities = []
@@ -328,6 +331,67 @@ def verify_homophily(G):
   else:
     print("No significant homophily detected")
     
+
+def cross_color_homophily(G, attr_name='color'):
+    """
+    Measures cross-colored homophily (or heterophily) in a network.
+    
+    Parameters:
+    -----------
+    gml_path : str
+        Path to the GML file
+    attr_name : str
+        Node attribute name representing group/color (default='color')
+        
+    Returns:
+    --------
+    dict with:
+      - same_color_edges: number of edges between nodes with same color
+      - cross_color_edges: number of edges between nodes with different colors
+      - cross_color_ratio: fraction of edges that are cross-color
+      - homophily_ratio: fraction of edges that are same-color
+    """
+
+    # Extract node attribute values
+    if not nx.get_node_attributes(G, attr_name):
+        print(f"Error: No node attribute '{attr_name}' found in the graph.")
+        return None
+
+    # Initialize counters
+    same_color_edges = 0
+    cross_color_edges = 0
+
+    # Iterate through edges and compare node attributes
+    for u, v in G.edges():
+        color_u = G.nodes[u].get(attr_name)
+        color_v = G.nodes[v].get(attr_name)
+        if color_u is None or color_v is None:
+            continue
+        if color_u == color_v:
+            same_color_edges += 1
+        else:
+            cross_color_edges += 1
+
+    total_edges = same_color_edges + cross_color_edges
+    if total_edges == 0:
+        print("No edges found.")
+        return None
+
+    cross_color_ratio = cross_color_edges / total_edges
+    homophily_ratio = same_color_edges / total_edges
+
+    print(f"Same-color edges: {same_color_edges}")
+    print(f"Cross-color edges: {cross_color_edges}")
+    print(f"Cross-color ratio: {cross_color_ratio:.4f}")
+    print(f"Homophily ratio: {homophily_ratio:.4f}")
+
+    return {
+        "same_color_edges": same_color_edges,
+        "cross_color_edges": cross_color_edges,
+        "cross_color_ratio": cross_color_ratio,
+        "homophily_ratio": homophily_ratio,
+    }
+
     
 # PLOTTING FUNCTIONS
 def plot_clustering_coefficient(G, clustering):
@@ -434,7 +498,7 @@ def plot_attributes(G):
   plt.show()
 
 
-# Animate graph evolution based on temporal edge changes.
+# Animate graph evolution based on (temporal) edge changes.
 def temporal_simulation(G, temporal_file):
   if not os.path.exists(temporal_file):
     print(f"Temporal simulation file {temporal_file} not found.")
@@ -527,6 +591,7 @@ def robustness_check(G, k, n_simulations=100):
   cluster_persistence = sum(1 for n in results['num_components'] 
                           if n <= original_num_components * 1.5) / n_simulations
   print(f"  Cluster persistence rate: {cluster_persistence:.2%}")
+  return G_temp
 
 
 # Remove k random edges before partitioning.
@@ -574,3 +639,18 @@ def simulate_failures(G:nx.Graph, k):
   print(f"  Change in average shortest path: {avg_short_before} -> {avg_short_after if avg_short_after else 'None (GRAPH IS DISCONNECTED)'}")
   
   return G_failures
+
+
+
+
+#Extra feature analyzing degree assortativity
+def analyze_degree_assortativity(graph):
+  assortativity_val = nx.degree_assortativity_coefficient(graph)
+
+  if assortativity_val > 0:
+    print("The input graph is assortative, high degree nodes tend to connect to other high-degree nodes")
+  elif assortativity_val < 0:
+    print("The input graph is dissassortative, high degree nodes tend to connect to lower-degree nodes")
+  else:
+    print("The input graph shows no degree correlation")
+  return assortativity_val

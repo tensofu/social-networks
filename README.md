@@ -1,5 +1,4 @@
 # Description
-
 This project is built upon the previous graph assignment in order to add more functions to analyze the graph.
 
 ### Quick Examples
@@ -7,10 +6,13 @@ This project is built upon the previous graph assignment in order to add more fu
 python ./graph_analysis.py --input data.gml --components 3 --plot C --simulate_failures 5 --output output.gml 
 python ./graph_analysis.py --input data.gml --plot T --temporal_simulation edges.csv
 python ./graph_analysis.py --input data.gml --plot P --verify_homophily --verify_balanced_graph --output output.gml
+python ./graph_analysis.py --input homophily.gml --plot P --verify_homophily --verify_balanced_graph --output output.gml 
 python ./graph_analysis.py --input data.gml --plot N
+ 
 
 # EXTRAS
 python ./graph_analysis.py --input data.gml --components 3 --plot C --simulate_failures 5 --output output.gml --split_output_dir
+python ./graph_analysis.py --input data.gml --degree_analysis T
 ```
 
 ### Approach
